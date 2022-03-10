@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "fastify": "^3.27.3",
+    "fastify-cors": "^6.0.3",
+    "fastify-express": "^0.3.3",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "knex": "^1.0.3",
+    "mysql2": "^2.3.3",
+    "nodemon": "^2.0.15",
+    "vue-sweetalert2": "^5.0.2"
+  },
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
