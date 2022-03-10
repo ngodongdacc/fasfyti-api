@@ -1,4 +1,6 @@
 const Joi = require('@hapi/joi')
+const auth = require('../auth/auth')
+
 const addUserOtps = {
     schema: {
         body: Joi.object().keys({
@@ -9,7 +11,6 @@ const addUserOtps = {
             phone: Joi.string().max(10).regex(/(84|0[3|5|7|8|9])+([0-9]{8})$/).required(),
             dob: Joi.string(),
             password: Joi.string().required(),
-
         }).required()
     },
     validatorCompiler: ({ schema, method, url, httpPart }) => {
@@ -51,7 +52,8 @@ const upUserOtps = {
     },
     validatorCompiler: ({ schema, method, url, httpPart }) => {
         return data => schema.validate(data)
-    }
+    },
+    preHandler: [auth.authorization]
 }
 const listUserOtps = {
     schema: {
@@ -63,6 +65,7 @@ const listUserOtps = {
     validatorCompiler: ({ schema, method, url, httpPart }) => {
         return data => schema.validate(data)
     },
+    preHandler: [auth.authorization],
     response: {
         200: {
             type: 'object',

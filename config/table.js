@@ -17,24 +17,6 @@ const listTable = [
            updatedAt DATE,
            PRIMARY KEY ( id )
         )`
-    },
-    {
-        table: 'user',
-        query: `
-        create table user(
-           id INT NOT NULL AUTO_INCREMENT,
-           firstName VARCHAR(100) NOT NULL,
-           lastName VARCHAR(100) NOT NULL,
-           dob DATE,
-           email VARCHAR(40) ,
-           phone VARCHAR(40) ,
-           username VARCHAR(100) NOT NULL,
-           password VARCHAR(100) NOT NULL,
-           status integer default 1,
-           createdAt DATE,
-           updatedAt DATE,
-           PRIMARY KEY ( id )
-        )`
     }
 ]
 
