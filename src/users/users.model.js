@@ -1,10 +1,10 @@
-const mysqlPromise = require('../../config/database');
-const bcrypt = require('bcrypt');
 const table = 'users';
+
+const knex = require('../../config/database');
+const bcrypt = require('bcrypt');
 
 const usersModel = {
     createTable: async function () {
-        const connection = await mysqlPromise.DATABASE.getConnection();
         const query = `
         create table users(
            id INT NOT NULL AUTO_INCREMENT,
@@ -22,147 +22,92 @@ const usersModel = {
         )`
         let res = [{}];
         try {
-            res = await connection.query(query);
-            connection.release();
+            res = await knex.query(query);
         }
         catch (err) {
             console.error(err)
-            connection.release();
+
             return false
         }
         return res.length > 0 ? res : null;
     },
     usersList: async function ({
-        filter = '',
+        filter = {},
         select = '*',
-        params = [],
-        orderBy = 'id',
-        orderVal = 'DESC',
+        orderBy = [{ column: 'id', order: 'desc' }],
         offset = 0,
-        limit = 20
+        limit = 10
     }) {
-        const connection = await mysqlPromise.DATABASE.getConnection();
-        const query = `SELECT ${select} FROM ${table}  where status = 1 ${filter} ORDER BY ${orderBy} ${orderVal}  LIMIT ?, ?`
-        const queryCount = `SELECT count(*) FROM ${table} where status = 1 ${filter}`;
-        const body = [...params, offset, limit]
+        const query = { status: 1, ...filter }
         try {
             const [data, count] = await Promise.all([
-                connection.query(query, body),
-                connection.query(queryCount, body),
+                knex.select(select)
+                    .from(table)
+                    .where(query)
+                    .orderBy(orderBy)
+                    .offset(offset)
+                    .limit(limit),
+                knex.from(table).where(query).count({ count: '*' }),
             ]);
-            connection.release();
             return {
-                data: data[0],
-                count: count[0] && count[0][0] && count[0][0]['count(*)'] ? count[0][0]['count(*)'] : 0
+                data,
+                count: count && count[0] && count[0].count ? count[0].count : 0,
+                query
             };
         }
         catch (err) {
             console.error(err)
-            connection.release();
-            return false
+            return {
+                data: [],
+                count: 0,
+                query
+            }
         }
 
     },
     findOne: async function ({
-        filter = '',
-        select = '*',
-        params = [],
-        orderBy = 'id',
-        orderVal = 'DESC',
+        filter = {},
+        select = ['createdAt', 'dob', 'email', 'firstName', 'id', 'lastName', 'phone', 'updatedAt', 'username'],
     }) {
-        const connection = await mysqlPromise.DATABASE.getConnection();
-        const query = `SELECT ${select} FROM ${table}  where status = 1 ${filter} ORDER BY ${orderBy} ${orderVal}  LIMIT ?, ?`;
-        const body = [...params, 0, 1]
         try {
-            const data = await connection.query(query, body)
-            connection.release();
-            return data[0] && data[0].length ? data[0][0] : null;
+            const query = { status: 1, ...filter }
+            let data = await knex.select(select)
+                .from(table)
+                .where(query).limit(1);
+            data = data && data.length ? data[0] : null
+            return data;
         }
         catch (err) {
             console.error(err)
-            connection.release();
-            return false
+            return null
         }
 
     },
-    usersDetail: async function (id, select = '*') {
-        const connection = await mysqlPromise.DATABASE.getConnection();
-        const query = `SELECT ${select} FROM ${table} WHERE id = ?`
-        let res = [{}];
-        try {
-            res = await connection.query(query, [id]);
-            connection.release();
-        }
-        catch (err) {
-            console.error(err)
-            connection.release();
-            return false
-        }
-        return res.length > 0 ? res[0] : null;
-    },
     createUsersDetail: async function ({
-        firstName,
-        lastName,
-        dob,
-        phone,
-        email,
-        username,
-        password,
+        data = []
     }) {
         try {
-            const connection = await mysqlPromise.DATABASE.getConnection();
-            let res = [{}];
-            const body = {
-                firstName,
-                lastName,
-                dob,
-                phone,
-                email,
-                username,
-                password: bcrypt.hashSync(password, 10),
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            // let into = '(';
-            // for (const key in body) {
-            //     into += `${key}, `
-            // }
-            // into = into + ')';
-            // res = await connection.execute(`INSERT INTO news (id, title, content, author) VALUES(${body})`);
-            const query = `INSERT INTO ${table} SET ?`
-            res = await connection.query(query, body);
-            connection.release();
-            return res;
+            return await knex.from(table).insert(data);
         }
         catch (err) {
             console.error('err:: ', err)
-            connection.release();
             return false
         }
 
     },
 
     // update user
-    updateUsers: async function ({
-        filter = '',
-        bodyFilter = {},
-        set = {}
+    update: async function ({
+        filter = {},
+        data = {}
     }) {
         try {
-            const connection = await mysqlPromise.DATABASE.getConnection();
-            let res = [{}];
-            const query = `UPDATE ${table} SET ? ${filter}`;
-            const body = [set, bodyFilter]
-            res = await connection.query(query, body);
-            connection.release();
-            return res;
+            return await knex.from(table).where(filter).update(data);
         }
         catch (err) {
             console.error('err:: ', err)
-            connection.release();
             return false
         }
-
     },
 }
 module.exports = usersModel;

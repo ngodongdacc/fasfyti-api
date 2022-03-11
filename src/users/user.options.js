@@ -4,12 +4,15 @@ const auth = require('../auth/auth')
 const addUserOtps = {
     schema: {
         body: Joi.object().keys({
-            username: Joi.string().max(100).required(),
-            firstName: Joi.string().max(100).required(),
-            lastName: Joi.string().max(100).required(),
+            username: Joi.string().min(6).required(),
+            firstName: Joi.string().min(2).max(100).required(),
+            lastName: Joi.string().min(2).max(100).required(),
             email: Joi.string().email().required(),
             phone: Joi.string().max(10).regex(/(84|0[3|5|7|8|9])+([0-9]{8})$/).required(),
-            dob: Joi.string(),
+            dob: Joi.alternatives([
+                Joi.date(),
+                Joi.string().valid(null)
+            ]),
             password: Joi.string().required(),
         }).required()
     },
@@ -47,7 +50,10 @@ const upUserOtps = {
             lastName: Joi.string().max(100),
             email: Joi.string().email(),
             phone: Joi.string().max(10).regex(/(84|0[3|5|7|8|9])+([0-9]{8})$/),
-            dob: Joi.string(),
+            dob: Joi.alternatives([
+                Joi.date(),
+                Joi.string().valid('')
+            ]),
         }).required()
     },
     validatorCompiler: ({ schema, method, url, httpPart }) => {

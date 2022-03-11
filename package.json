@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@hapi/joi": "^17.1.1",
+    "ajv": "^8.10.0",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
@@ -10,6 +11,7 @@
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "knex": "^1.0.3",
+    "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "nodemon": "^2.0.15",
     "vue-sweetalert2": "^5.0.2"

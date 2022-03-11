@@ -20,16 +20,19 @@ async function getUsersList(request, reply) {
     }
     // var queryParams = { offset: offset, limit: limit }
     const newsData = await usersModel.usersList({ offset, limit });
-    var response = { page: page, limit, data: newsData.data, count: newsData.count }
+    var response = { page, limit, ...newsData }
     return response;
 }
 
 // get user detail
 async function getUsersDetail(request, reply) {
-    const select = 'createdAt, dob, email, firstName, id, lastName, phone, updatedAt, username';
-    const newsData = await usersModel.usersDetail(request.params.id, select);
-    if (newsData.length > 0) {
-        return reply.status(200).send({ data: newsData[0] });
+    const data = await usersModel.findOne({
+        filter: {
+            id: request.params.id
+        },
+    });
+    if (data) {
+        return reply.status(200).send({ data });
     } else {
         return reply.status(500).send({ error: "Users Not found!" });
     }
@@ -38,49 +41,56 @@ async function getUsersDetail(request, reply) {
 // get user profile
 async function getUsersProfile(request, reply) {
     const user = request.user;
-    const select = 'createdAt, dob, email, firstName, id, lastName, phone, updatedAt, username';
-    const newsData = await usersModel.usersDetail(user.id, select);
-    if (newsData.length > 0) {
-        return reply.status(200).send({ data: newsData[0] });
+    // const select = 'createdAt, dob, email, firstName, id, lastName, phone, updatedAt, username';
+    const data = await usersModel.findOne({ id: user.id });
+    if (data) {
+        return reply.status(200).send({ data });
     } else {
         return reply.status(500).send({ error: "Users Not found!" });
     }
 }
 
-async function updateUsersDetail(request, reply) {
-    const {
-        firstName,
-        lastName,
-        dob,
-        phone,
-        email,
-    } = request.body;
-    const newsData = await usersModel.usersDetail(request.params.id);
-    if (newsData.length > 0) {
-        const dataSave = newsData[0];
-        if (firstName) {
-            dataSave.firstName = firstName;
+async function updateUsersDetail(request, reply, next) {
+    try {
+        const {
+            firstName,
+            lastName,
+            dob,
+            phone,
+            email,
+        } = request.body;
+        const newsData = await usersModel.findOne({ id: request.params.id });
+        if (newsData) {
+            const dataSave = { ...newsData };
+            delete dataSave.id;
+            if (firstName) {
+                dataSave.firstName = firstName;
+            }
+            if (lastName) {
+                dataSave.lastName = lastName;
+            }
+            if (dob) {
+                dataSave.dob = dob;
+            }
+            if (phone) {
+                dataSave.phone = phone;
+            }
+            if (email) {
+                dataSave.email = email;
+            }
+            await usersModel.update({
+                filter: { id: request.params.id },
+                data: dataSave
+            })
+            return reply.status(200).send({ data: dataSave });
+        } else {
+            return reply.status(500).send({ error: "Users Not found!" });
         }
-        if (lastName) {
-            dataSave.lastName = lastName;
-        }
-        if (dob) {
-            dataSave.dob = dob;
-        }
-        if (phone) {
-            dataSave.phone = phone;
-        }
-        if (email) {
-            dataSave.email = email;
-        }
-        await usersModel.updateUsers({
-            filter: `where id = ${request.params.id}`,
-            set: dataSave
-        })
-        return reply.status(200).send({ data: dataSave });
-    } else {
-        return reply.status(500).send({ error: "Users Not found!" });
+    } catch (error) {
+        console.log('error:: ', error);
+        next(error)
     }
+
 }
 
 // create user
@@ -95,9 +105,9 @@ async function createUsersDetail(request, reply) {
         password,
     } = request.body;
     const [checkPhone, checkEmail, checkUser] = await Promise.all([
-        usersModel.findOne({ filter: `and phone = ?`, params: [phone] }),
-        usersModel.findOne({ filter: `and email = ?`, params: [email] }),
-        usersModel.findOne({ filter: `and username = ?`, params: [username] }),
+        usersModel.findOne({ filter: { phone } }),
+        usersModel.findOne({ filter: { email } }),
+        usersModel.findOne({ filter: { username } }),
     ])
     if (checkPhone) {
         return reply.status(400).send({
@@ -121,16 +131,20 @@ async function createUsersDetail(request, reply) {
         });
     }
     const newsData = await usersModel.createUsersDetail({
-        firstName,
-        lastName,
-        dob,
-        phone,
-        email,
-        username,
-        password,
+        data: [
+            {
+                firstName,
+                lastName,
+                dob,
+                phone,
+                email,
+                username,
+                password,
+            }
+        ]
     });
-    if (newsData.length > 0) {
-        return reply.status(200).send({ data: newsData[0] });
+    if (newsData) {
+        return reply.status(200).send({ data: newsData });
     } else {
         return reply.status(500).send({ error: "Users Not found!" });
     }
@@ -141,7 +155,7 @@ async function removeUsers(request, reply) {
     const {
         ids = []
     } = request.body;
-    const newsData = await usersModel.updateUsers({
+    const newsData = await usersModel.update({
         set: { status: 3 },
         filter: `where id in (${ids.join()})`
     });
