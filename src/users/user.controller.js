@@ -19,7 +19,7 @@ async function getUsersList(request, reply) {
         }
     }
     // var queryParams = { offset: offset, limit: limit }
-    const newsData = await usersModel.usersList({ offset, limit });
+    const newsData = await usersModel.list({ offset, limit });
     var response = { page, limit, ...newsData }
     return response;
 }
@@ -59,7 +59,7 @@ async function updateUsersDetail(request, reply, next) {
             phone,
             email,
         } = request.body;
-        const newsData = await usersModel.findOne({ id: request.params.id });
+        const newsData = await usersModel.findOne({ id: request.params.id });   
         if (newsData) {
             const dataSave = { ...newsData };
             delete dataSave.id;
@@ -130,7 +130,7 @@ async function createUsersDetail(request, reply) {
             field: 'username',
         });
     }
-    const newsData = await usersModel.createUsersDetail({
+    const newsData = await usersModel.create({
         data: [
             {
                 firstName,
@@ -140,6 +140,7 @@ async function createUsersDetail(request, reply) {
                 email,
                 username,
                 password,
+                createdAt: new Date()
             }
         ]
     });
@@ -169,9 +170,10 @@ async function removeUsers(request, reply) {
 async function sign_in(request, reply) {
     try {
         const { username, password } = request.body
+        const select = [ 'email', 'id', 'password'];
         const user = await usersModel.findOne({
-            filter: `and username = ?`,
-            params: [username]
+            filter: { username },
+            select
         });
 
         if (!user) {

@@ -4,6 +4,7 @@ const knex = require('../../config/database');
 const bcrypt = require('bcrypt');
 
 const usersModel = {
+    
     createTable: async function () {
         const query = `
         create table users(
@@ -31,7 +32,8 @@ const usersModel = {
         }
         return res.length > 0 ? res : null;
     },
-    usersList: async function ({
+    
+    list: async function ({
         filter = {},
         select = '*',
         orderBy = [{ column: 'id', order: 'desc' }],
@@ -65,6 +67,7 @@ const usersModel = {
         }
 
     },
+    
     findOne: async function ({
         filter = {},
         select = ['createdAt', 'dob', 'email', 'firstName', 'id', 'lastName', 'phone', 'updatedAt', 'username'],
@@ -83,7 +86,8 @@ const usersModel = {
         }
 
     },
-    createUsersDetail: async function ({
+    
+    create: async function ({
         data = []
     }) {
         try {
