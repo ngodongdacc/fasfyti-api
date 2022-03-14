@@ -1,6 +1,7 @@
 const usersModel = require('./users.model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
+const knex = require('../../config/database');
 
 // get user list
 async function getUsersList(request, reply) {
@@ -59,7 +60,7 @@ async function updateUsersDetail(request, reply, next) {
             phone,
             email,
         } = request.body;
-        const newsData = await usersModel.findOne({ id: request.params.id });   
+        const newsData = await usersModel.findOne({ id: request.params.id });
         if (newsData) {
             const dataSave = { ...newsData };
             delete dataSave.id;
@@ -73,10 +74,40 @@ async function updateUsersDetail(request, reply, next) {
                 dataSave.dob = dob;
             }
             if (phone) {
+                const phoneCheck = await knex.from('users')
+                    .where({
+                        status: 1,
+                        phone
+                    })
+                    .whereNot('id', request.params.id)
+                    .limit(1);
+                if (phoneCheck && phoneCheck.length) {
+                    return reply.status(400).send({
+                        statusCode: 400,
+                        message: `phone value ${phone} already exist`,
+                        error: "Bad Request",
+                        field: 'phone'
+                    });
+                }
                 dataSave.phone = phone;
             }
             if (email) {
                 dataSave.email = email;
+                const emailCheck = await knex.from('users')
+                    .where({
+                        status: 1,
+                        email
+                    })
+                    .whereNot('id', request.params.id)
+                    .limit(1);
+                if (emailCheck && emailCheck.length) {
+                    return reply.status(400).send({
+                        statusCode: 400,
+                        message: `email value ${email} already exist`,
+                        error: "Bad Request",
+                        field: 'email'
+                    });
+                }
             }
             await usersModel.update({
                 filter: { id: request.params.id },
@@ -152,7 +183,7 @@ async function createUsersDetail(request, reply) {
     if (newsData) {
         return reply.status(200).send({ data: newsData });
     } else {
-        
+
         return reply.status(500).send({ error: "Users Not found!" });
     }
 }
@@ -163,10 +194,10 @@ async function removeUsers(request, reply) {
         ids = []
     } = request.body;
     const newsData = await usersModel.updateIn({
-    //    filter: { id: ids },
-       keyIn: 'id',
-       dataIn: ids,
-       data: { status: 3 }
+        //    filter: { id: ids },
+        keyIn: 'id',
+        dataIn: ids,
+        data: { status: 3 }
     });
     if (newsData.length > 0) {
         return reply.status(200).send({ data: newsData[0] });
@@ -178,7 +209,7 @@ async function removeUsers(request, reply) {
 async function sign_in(request, reply) {
     try {
         const { username, password } = request.body
-        const select = [ 'email', 'id', 'password'];
+        const select = ['email', 'id', 'password'];
         const user = await usersModel.findOne({
             filter: { username },
             select
