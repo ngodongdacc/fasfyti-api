@@ -6,7 +6,6 @@ const {
     listUserOtps,
     signInOtps
 } = require('./user.options');
-
 async function routes(fastify, options) {
     fastify.get('/users', listUserOtps, userCtl.getUsersList);
     fastify.post('/users', addUserOtps, userCtl.createUsersDetail);

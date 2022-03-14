@@ -104,6 +104,7 @@ async function createUsersDetail(request, reply) {
         username,
         password,
     } = request.body;
+
     const [checkPhone, checkEmail, checkUser] = await Promise.all([
         usersModel.findOne({ filter: { phone } }),
         usersModel.findOne({ filter: { email } }),
@@ -113,6 +114,7 @@ async function createUsersDetail(request, reply) {
         return reply.status(400).send({
             statusCode: 400,
             message: `phone value ${phone} already exist`,
+            error: "Bad Request",
             field: 'phone'
         });
     }
@@ -120,7 +122,8 @@ async function createUsersDetail(request, reply) {
         return reply.status(400).send({
             statusCode: 400,
             message: `email value ${email} already exist`,
-            field: 'email'
+            field: 'email',
+            error: "Bad Request",
         });
     }
     if (checkUser) {
@@ -128,8 +131,10 @@ async function createUsersDetail(request, reply) {
             statusCode: 400,
             message: `username value ${username} already exist`,
             field: 'username',
+            error: "Bad Request",
         });
     }
+    // console.log('username:: ', username);
     const newsData = await usersModel.create({
         data: [
             {
@@ -147,6 +152,7 @@ async function createUsersDetail(request, reply) {
     if (newsData) {
         return reply.status(200).send({ data: newsData });
     } else {
+        
         return reply.status(500).send({ error: "Users Not found!" });
     }
 }
@@ -156,9 +162,11 @@ async function removeUsers(request, reply) {
     const {
         ids = []
     } = request.body;
-    const newsData = await usersModel.update({
-        set: { status: 3 },
-        filter: `where id in (${ids.join()})`
+    const newsData = await usersModel.updateIn({
+    //    filter: { id: ids },
+       keyIn: 'id',
+       dataIn: ids,
+       data: { status: 3 }
     });
     if (newsData.length > 0) {
         return reply.status(200).send({ data: newsData[0] });

@@ -1,46 +1,22 @@
 const Joi = require('@hapi/joi')
 const auth = require('../auth/auth')
-
+const bodySchema = require('./bodySchema')
 const addUserOtps = {
     schema: {
-        body: Joi.object().keys({
-            username: Joi.string().min(6).required(),
-            firstName: Joi.string().min(2).max(100).required(),
-            lastName: Joi.string().min(2).max(100).required(),
-            email: Joi.string().email().required(),
-            phone: Joi.string().max(10).regex(/(84|0[3|5|7|8|9])+([0-9]{8})$/).required(),
-            dob: Joi.alternatives([
-                Joi.date(),
-                Joi.string().valid(null)
-            ]),
-            password: Joi.string().required(),
-        }).required()
+        type: "object",
+        body: {
+            firstName: bodySchema.firstName,
+            lastName: bodySchema.lastName,
+            username: bodySchema.username,
+            phone: bodySchema.phone,
+            email: bodySchema.email,
+            dob: bodySchema.dob,
+            password: bodySchema.password,
+            // confirmPassword: bodySchema.confirmPassword,
+        },
+        required: ["firstName", "lastName", "username", "password", "confirmPassword"],
+        additionalProperties: true,
     },
-    validatorCompiler: ({ schema, method, url, httpPart }) => {
-        return data => schema.validate(data)
-    }
-    // schema: {
-
-    //     body: Joi.object().keys({
-    //         hello: Joi.string().required()
-    //     }).required(),
-    //     validatorCompiler: ({ schema, method, url, httpPart }) => {
-    //         return data => schema.validate(data)
-    //     }
-    //     // {
-    //     //     type: 'object',
-    //     //     required: ['username'],
-    //     //     properties: {
-    //     //         username: { type: 'string', maxLength: 100 },
-    //     //         firstName: { type: 'string', maxLength: 100 },
-    //     //         lastName: { type: 'string', maxLength: 100 },
-    //     //         email: { type: 'string', maxLength: 100 },
-    //     //         phone: { type: 'string', maxLength: 10 },
-    //     //         dob: { type: 'string' },
-    //     //         password: { type: 'string' },
-    //     //     }
-    //     // }
-    // },
 }
 const upUserOtps = {
     schema: {

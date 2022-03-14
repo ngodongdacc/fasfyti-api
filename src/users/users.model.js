@@ -76,7 +76,8 @@ const usersModel = {
             const query = { status: 1, ...filter }
             let data = await knex.select(select)
                 .from(table)
-                .where(query).limit(1);
+                .where(query)
+                .limit(1);
             data = data && data.length ? data[0] : null
             return data;
         }
@@ -107,6 +108,23 @@ const usersModel = {
     }) {
         try {
             return await knex.from(table).where(filter).update(data);
+        }
+        catch (err) {
+            console.error('err:: ', err)
+            return false
+        }
+    },
+    updateIn: async function ({
+        filter = {},
+        data = {},
+        keyIn = '',
+        dataIn = []
+    }) {
+        try {
+            return await knex.from(table)
+                .where(filter)
+                .whereIn(keyIn, dataIn)
+                .update(data);
         }
         catch (err) {
             console.error('err:: ', err)
