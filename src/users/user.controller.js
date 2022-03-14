@@ -189,20 +189,24 @@ async function createUsersDetail(request, reply) {
 }
 
 // remove user
-async function removeUsers(request, reply) {
-    const {
-        ids = []
-    } = request.body;
-    const newsData = await usersModel.updateIn({
-        //    filter: { id: ids },
-        keyIn: 'id',
-        dataIn: ids,
-        data: { status: 3 }
-    });
-    if (newsData.length > 0) {
-        return reply.status(200).send({ data: newsData[0] });
-    } else {
-        return reply.status(500).send({ error: "Users Not found!" });
+async function removeUsers(request, reply, done) {
+    try {
+        const {
+            ids = []
+        } = request.body;
+        const data = await usersModel.updateIn({
+            //    filter: { id: ids },
+            keyIn: 'id',
+            dataIn: ids,
+            data: { status: 3 }
+        });
+        if (data) {
+            return reply.status(200).send({ data });
+        } else {
+            return reply.status(500).send({ error: "Users Not found!" });
+        }
+    } catch (error) {
+        reply.status(500).send(error)
     }
 }
 

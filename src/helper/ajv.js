@@ -8,18 +8,13 @@ const ajv = new Ajv({
     removeAdditional: true,
     useDefaults: true,
     coerceTypes: true,
-    nullable: true,
+    // nullable: true,
     allErrors: true,
     $data: true,
     useDefaults: "empty",
     // any other options
     // ...
 })
-// const ajv = new Ajv({
-//     allErrors: true,
-//     $data: true,
-//     useDefaults: "empty",
-// });
 
 ajvErrors(ajv);
 addFormats(ajv);

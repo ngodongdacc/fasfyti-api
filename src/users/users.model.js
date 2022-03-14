@@ -4,26 +4,38 @@ const knex = require('../../config/database');
 const bcrypt = require('bcrypt');
 
 const usersModel = {
-    
+
     createTable: async function () {
-        const query = `
-        create table users(
-           id INT NOT NULL AUTO_INCREMENT,
-           firstName VARCHAR(100) NOT NULL,
-           lastName VARCHAR(100) NOT NULL,
-           dob DATE,
-           email VARCHAR(40) ,
-           phone VARCHAR(40) ,
-           username VARCHAR(100) NOT NULL,
-           password VARCHAR(100) NOT NULL,
-           status integer default 1,
-           createdAt DATE,
-           updatedAt DATE,
-           PRIMARY KEY ( id )
-        )`
-        let res = [{}];
         try {
-            res = await knex.query(query);
+            // const query = `
+            // create table users(
+            //    id INT NOT NULL AUTO_INCREMENT,
+            //    firstName VARCHAR(100) NOT NULL,
+            //    lastName VARCHAR(100) NOT NULL,
+            //    dob DATE,
+            //    email VARCHAR(40) ,
+            //    phone VARCHAR(40) ,
+            //    username VARCHAR(100) NOT NULL,
+            //    password VARCHAR(100) NOT NULL,
+            //    status integer default 1,
+            //    createdAt DATE,
+            //    updatedAt DATE,
+            //    PRIMARY KEY ( id )
+            // )`
+            // create table 'users' with a primary key using 'increments()'
+            return await knex.schema.createTable('users', function (table) {
+                table.increments('id').primary();
+                table.string('firstName').notNullable();
+                table.string('lastName').notNullable();
+                table.date('dob');
+                table.string('email');
+                table.string('phone');
+                table.string('username');
+                table.string('password');
+                table.integer('status').defaultTo(1);
+                table.date('createdAt').defaultTo(knex.fn.now());
+                table.date('updatedAt').defaultTo(knex.fn.now());
+            });
         }
         catch (err) {
             console.error(err)
@@ -32,7 +44,7 @@ const usersModel = {
         }
         return res.length > 0 ? res : null;
     },
-    
+
     list: async function ({
         filter = {},
         select = '*',
@@ -67,7 +79,7 @@ const usersModel = {
         }
 
     },
-    
+
     findOne: async function ({
         filter = {},
         select = ['createdAt', 'dob', 'email', 'firstName', 'id', 'lastName', 'phone', 'updatedAt', 'username'],
@@ -87,7 +99,7 @@ const usersModel = {
         }
 
     },
-    
+
     create: async function ({
         data = []
     }) {

@@ -148,23 +148,23 @@ const listUserOtps = {
     type: "object",
     properties: {
         limit: {
-            type: "integer",
+            type: "number",
             default: 10,
             maximum: 1000,
             transform: ["trim"],
             //this is whats causing the error
             errorMessage: {
-                type: "limit is integer",
+                type: "limit is number",
                 maximum: "limit max is 1000"
             },
         },
         page: {
-            type: "integer",
+            type: "number",
             default: 1,
             transform: ["trim"],
             //this is whats causing the error
             errorMessage: {
-                type: "limit is integer",
+                type: "limit is number",
             },
         }
     },
@@ -208,6 +208,25 @@ const signInOtps = {
             },
         },
         required: ["username", "password",],
+        additionalProperties: true,
+    },
+}
+const removeOtps = {
+    schema: {
+        type: "object",
+        body: {
+            ids: {
+                type: "array",
+                items: { type: "integer" },
+                minItems: 1,
+                //this is whats causing the error
+                errorMessage: {
+                    required: "Please enter username",
+                    minItems: "ids must have at 1 item",
+                },
+            },
+        },
+        required: ["ids"],
         additionalProperties: true,
     },
 }
